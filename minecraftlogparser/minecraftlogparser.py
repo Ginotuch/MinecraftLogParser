@@ -18,6 +18,7 @@ class MinecraftLogParser:
         self.make_sql()
         self.extract()
         self.read_files()
+        self.update_messages_uuids()
         self.vacuum()
 
     def update_messages_uuids(self):
