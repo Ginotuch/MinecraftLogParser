@@ -9,7 +9,6 @@ create table chat_messages
     primary key (message_id),
     foreign key (users_uuid) references users (uuid)
 );
-create index message_id_index on chat_messages (message_id);
 create index uname_index on chat_messages (current_username);
 create index date_index on chat_messages (send_date);
 create index message_index on chat_messages (message);
