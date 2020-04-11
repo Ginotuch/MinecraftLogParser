@@ -36,7 +36,6 @@ class LogType:
         return self.lrow
 
     def do_sql(self, conn, sql_db) -> int:
-        print(self.lrow)
         c = 0
         for match in self.matches:
             if match["id"] > self.last_row(sql_db):
@@ -69,7 +68,7 @@ class MessageType(LogType):
     def match_and_store(self, file_text, date) -> None:
         for line_num, line in enumerate(file_text.split("\n")):
             line = line.strip()
-            if (match := re.match(self.regex, line)) is not None:
+            if (match := self.regex.match(line)) is not None:
                 temp_dict = super()._get_default_matches(match, date, line_num)
                 temp_dict["rank"] = temp_dict["match"][1][1:-1]
                 temp_dict["username"] = temp_dict["match"][2]
@@ -87,7 +86,7 @@ class DoubleLineType(LogType):
         line_doubles = file_text.split("\n")
         line_doubles = [line_doubles[i] + "\n" + line_doubles[i + 1] for i in range(len(line_doubles) - 1)]
         for line_num, line in enumerate(line_doubles):
-            if (match := re.match(self.regex, line)) is not None:
+            if (match := self.regex.match(line)) is not None:
                 temp_dict = super()._get_default_matches(match, date, line_num)
                 temp_dict["username"] = temp_dict["match"][1]
                 temp_dict["users_uuid"] = temp_dict["match"][2]
