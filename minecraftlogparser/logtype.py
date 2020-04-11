@@ -1,33 +1,33 @@
 import re
 import sqlite3
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Tuple
 
 
 class LogType:
     def __init__(self):
-        self.name = "LogType"
+        self.name: str = "LogType"
         self.matches: List[Dict[str, Any]] = []
-        self.regex = None
-        self.lrow_command = ""
-        self.sql_tuple = ()
-        self.insert_command = ""
-        self.lrow = ""
+        self.regex: re.Pattern = re.compile("")
+        self.lrow_command: str = ""
+        self.sql_tuple: Tuple[str] = ("",)
+        self.insert_command: str = ""
+        self.lrow: str = ""
 
     def match_and_store(self, file_text, date) -> None:
         pass
 
-    def _get_default_matches(self, match, date, line_num) -> Dict:
-        match = match.groups()
-        date_text = "{} {}".format(date, match[0][1:-1])
-        message_id = "{}{:08d}".format(date_text.replace(" ", "").replace(":", "").replace("-", ""), line_num)
-        temp_dict = {
+    def _get_default_matches(self, match, date, line_num) -> dict:
+        match: tuple = match.groups()
+        date_text: str = "{} {}".format(date, match[0][1:-1])
+        message_id: str = "{}{:08d}".format(date_text.replace(" ", "").replace(":", "").replace("-", ""), line_num)
+        temp_dict: Dict[str, Any] = {
             "match": match,
             "date_text": date_text,
             "id": message_id}
         self.matches.append(temp_dict)
         return temp_dict
 
-    def sort(self):
+    def sort(self) -> None:
         self.matches.sort(key=lambda x: x["id"])
 
     def last_row(self, conn) -> str:
@@ -36,7 +36,7 @@ class LogType:
         return self.lrow
 
     def do_sql(self, conn, sql_db) -> int:
-        c = 0
+        c: int = 0
         for match in self.matches:
             if match["id"] > self.last_row(sql_db):
                 c += 1
@@ -45,8 +45,8 @@ class LogType:
         return c
 
     def _get_last_row(self, sql_db) -> None:
-        conn = sqlite3.connect(sql_db)
-        cur = conn.cursor()
+        conn: sqlite3.Connection = sqlite3.connect(sql_db)
+        cur: sqlite3.Cursor = conn.cursor()
         cur.execute(self.lrow_command)
         if (ret := cur.fetchall()) != []:
             self.lrow = ret[0][0]
@@ -67,9 +67,9 @@ class MessageType(LogType):
 
     def match_and_store(self, file_text, date) -> None:
         for line_num, line in enumerate(file_text.split("\n")):
-            line = line.strip()
+            line: str = line.strip()
             if (match := self.regex.match(line)) is not None:
-                temp_dict = self._get_default_matches(match, date, line_num)
+                temp_dict: Dict[str, Any] = self._get_default_matches(match, date, line_num)
                 temp_dict["rank"] = temp_dict["match"][1][1:-1]
                 temp_dict["username"] = temp_dict["match"][2]
                 temp_dict["message_text"] = temp_dict["match"][3]
@@ -83,11 +83,11 @@ class DoubleLineType(LogType):
             "(\[\d\d:\d\d:\d\d\]) \[User Authenticator #\d*\/INFO]: UUID of player ([^\n\v\0\r\t<>\\\/$%^@: ]{1,50}) is ([^\n\v\0\r ]*)\n\[\d\d:\d\d:\d\d\] \[Server thread\/INFO\]: [^\n\v\0\r\t<>\\\/$%^@[: ]{1,50}\[\/([0-9\.]*)")
 
     def match_and_store(self, file_text, date) -> None:
-        line_doubles = file_text.split("\n")
+        line_doubles: List[str] = file_text.split("\n")
         line_doubles = [line_doubles[i] + "\n" + line_doubles[i + 1] for i in range(len(line_doubles) - 1)]
         for line_num, line in enumerate(line_doubles):
             if (match := self.regex.match(line)) is not None:
-                temp_dict = self._get_default_matches(match, date, line_num)
+                temp_dict: Dict[str, Any] = self._get_default_matches(match, date, line_num)
                 temp_dict["username"] = temp_dict["match"][1]
                 temp_dict["users_uuid"] = temp_dict["match"][2]
                 temp_dict["ip"] = temp_dict["match"][3]
