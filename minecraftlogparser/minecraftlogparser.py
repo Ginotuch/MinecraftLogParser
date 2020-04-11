@@ -82,7 +82,7 @@ class MinecraftLogParser:
             print("No database found, making new one", end="")
             conn = sqlite3.connect(self.sql_db)
             print(".", end="")
-            with open('create_database.sql') as sql_file:
+            with open(os.path.join(os.path.dirname(__file__), 'create_database.sql')) as sql_file:
                 c = conn.cursor()
                 print(".", end="")
                 c.executescript(sql_file.read())
