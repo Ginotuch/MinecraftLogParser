@@ -9,10 +9,10 @@ from minecraftlogparser.logtype import LogType, MessageType, IPType, UUIDType, U
 
 
 class MinecraftLogParser:
-    def __init__(self):
+    def __init__(self, log_dir, sql_db):
         self.datatypes: List[LogType] = [MessageType(), IPType(), UUIDType(), UsernameType()]
-        self.log_dir = "C:\\path\\to\\logs"
-        self.sql_db = "C:\\path\\to\\chat.db"
+        self.log_dir = log_dir
+        self.sql_db = sql_db
 
     def main(self):
         self.make_sql()
@@ -111,4 +111,4 @@ class MinecraftLogParser:
 
 
 if __name__ == '__main__':
-    MinecraftLogParser().main()
+    MinecraftLogParser("C:\\path\\to\\logs", "C:\\path\\to\\chat.db").main()
