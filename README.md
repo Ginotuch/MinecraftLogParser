@@ -5,7 +5,7 @@ parse them to find all messages, user logins, uuids, etc. Extracted data is then
 ## Notes
 * This can be run multiple times on the same dataset and will avoid data deduplication.
 * The file `latest.log` present in most logs folders will be assumed made on today's date,
-otherwise rename it following ISO8601 format: YYYY-MM-DD
+otherwise rename it following ISO8601 format: `YYYY-MM-DD.log`
 
 ### commands.sql
 Sample commands for extracting and searching through data from the SQLite database.
