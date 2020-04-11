@@ -21,6 +21,7 @@ create table users
     PRIMARY KEY (uuid),
     unique (uuid_id)
 );
+create index uuid_id_index on users (uuid_id);
 
 create table user_ips
 (
@@ -31,6 +32,8 @@ create table user_ips
     foreign key (users_uuid) references users (uuid),
     primary key (log_in_id)
 );
+create index user_ips_users_uuid_index on user_ips (users_uuid);
+create index ip_index on user_ips (ip);
 
 create table usernames
 (
@@ -42,4 +45,5 @@ create table usernames
     primary key (username_id),
     unique (username, users_uuid)
 );
+create index usernames_users_uuid_index on  usernames(users_uuid);
 create index username_index on usernames (username);
