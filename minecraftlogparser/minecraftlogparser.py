@@ -46,6 +46,7 @@ class MinecraftLogParser:
 
     def read_files(self):
         c = 0
+        print("Parsing log files", end="")
         for root, dirs, files in os.walk(self.log_dir):
             for file in files:
                 if file[-4:].lower() == ".log":
@@ -61,13 +62,19 @@ class MinecraftLogParser:
                         file_text = f.read()
                         for datatype in self.datatypes:
                             datatype.match_and_store(file_text, date)
+        print("Done")
+
+        print("Sorting data", end="")
         for datatype in self.datatypes:
+            print(".", end="")
             datatype.sort()
+        print("DONE")
 
         conn = sqlite3.connect(self.sql_db)
         for datatype in self.datatypes:
-            print("new type")
+            print("Inserting rows from", datatype.name, end=" ")
             datatype.do_sql(conn, self.sql_db)
+            print("DONE")
         conn.close()
 
     def make_sql(self):
