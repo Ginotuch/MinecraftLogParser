@@ -69,7 +69,7 @@ class MessageType(LogType):
         for line_num, line in enumerate(file_text.split("\n")):
             line = line.strip()
             if (match := self.regex.match(line)) is not None:
-                temp_dict = super()._get_default_matches(match, date, line_num)
+                temp_dict = self._get_default_matches(match, date, line_num)
                 temp_dict["rank"] = temp_dict["match"][1][1:-1]
                 temp_dict["username"] = temp_dict["match"][2]
                 temp_dict["message_text"] = temp_dict["match"][3]
@@ -87,7 +87,7 @@ class DoubleLineType(LogType):
         line_doubles = [line_doubles[i] + "\n" + line_doubles[i + 1] for i in range(len(line_doubles) - 1)]
         for line_num, line in enumerate(line_doubles):
             if (match := self.regex.match(line)) is not None:
-                temp_dict = super()._get_default_matches(match, date, line_num)
+                temp_dict = self._get_default_matches(match, date, line_num)
                 temp_dict["username"] = temp_dict["match"][1]
                 temp_dict["users_uuid"] = temp_dict["match"][2]
                 temp_dict["ip"] = temp_dict["match"][3]
