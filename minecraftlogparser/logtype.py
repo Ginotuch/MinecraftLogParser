@@ -75,7 +75,7 @@ class MessageType(LogType):
                 temp_dict["message_text"] = temp_dict["match"][3]
 
 
-class DoubleLineType(LogType):
+class UserLoginType(LogType):
     def __init__(self):
         super().__init__()
         self.name = "DoubleLineType"
@@ -93,7 +93,7 @@ class DoubleLineType(LogType):
                 temp_dict["ip"] = temp_dict["match"][3]
 
 
-class IPType(DoubleLineType):
+class IPType(UserLoginType):
     def __init__(self):
         super().__init__()
         self.lrow_command = "select log_in_id from user_ips order by log_in_id desc limit 1"
@@ -101,7 +101,7 @@ class IPType(DoubleLineType):
         self.sql_tuple = ("id", "users_uuid", "ip", "date_text")
 
 
-class UUIDType(DoubleLineType):
+class UUIDType(UserLoginType):
     def __init__(self):
         super().__init__()
         self.name = "UUIDType"
@@ -110,7 +110,7 @@ class UUIDType(DoubleLineType):
         self.sql_tuple = ("id", "users_uuid", "date_text")
 
 
-class UsernameType(DoubleLineType):
+class UsernameType(UserLoginType):
     def __init__(self):
         super().__init__()
         self.name = "UsernameType"
