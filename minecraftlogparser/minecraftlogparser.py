@@ -13,9 +13,11 @@ class MinecraftLogParser:
         self.datatypes: List[LogType] = [MessageType(), IPType(), UUIDType(), UsernameType()]
         self.log_dir = log_dir
         self.sql_db = sql_db
+        self.last_log_file = ""
 
     def main(self):
         self.make_sql()
+        self.get_lrow()
         self.extract()
         self.read_files()
         self.update_messages_uuids()
@@ -26,7 +28,7 @@ class MinecraftLogParser:
         conn = sqlite3.connect(self.sql_db)
         print(".", end="")
         conn.execute(
-            "update chat_messages set users_uuid=(select U.users_uuid from usernames as U where U.username = current_username and (select count(U.users_uuid) from usernames as U where U.username = current_username) = 1)")
+            "update chat_messages set users_uuid=(select U.users_uuid from usernames as U where U.username like current_username and (select count(U.users_uuid) from usernames as U where U.username like current_username) = 1)")
         print(".", end="")
         conn.commit()
         print(".", end="")
@@ -44,6 +46,15 @@ class MinecraftLogParser:
         conn.close()
         print("DONE")
 
+    def get_lrow(self):
+        last_row = None
+        for datatype in self.datatypes:
+            row = datatype.last_row(self.sql_db)
+            if last_row is None or last_row > row[:8]:
+                last_row = row[:8]
+        self.last_log_file = "{}-{}-{}".format(last_row[:4], last_row[4:6], last_row[6:8])
+        print()
+
     def read_files(self):
         c = 0
         print("Parsing log files", end="")
@@ -55,6 +66,8 @@ class MinecraftLogParser:
                             os.path.getmtime(os.path.join(self.log_dir, 'latest.log'))).isoformat()[:10]
                     else:
                         date = file[:10]
+                    if date < self.last_log_file:
+                        continue
                     if c == 0:
                         print(".", end="")
                     c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
@@ -104,6 +117,8 @@ class MinecraftLogParser:
             c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
             if os.path.isfile(os.path.join(self.log_dir, file)) and file[-2:].lower() == "gz" and not os.path.exists(
                     os.path.join(self.log_dir, file[:-3])):
+                if file[:10] < self.last_log_file:
+                    continue
                 with gzip.open(os.path.join(self.log_dir, file), 'rb') as f_in:
                     with open(os.path.join(self.log_dir, file[:-3]), 'wb') as f_out:
                         shutil.copyfileobj(f_in, f_out)
