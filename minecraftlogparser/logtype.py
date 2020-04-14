@@ -30,9 +30,9 @@ class LogType:
     def sort(self) -> None:
         self.matches.sort(key=lambda x: x["id"])
 
-    def last_row(self, conn) -> str:
+    def last_row(self, sql_db: str) -> str:
         if self.lrow == "":
-            self._get_last_row(conn)
+            self._get_last_row(sql_db)
         return self.lrow
 
     def do_sql(self, conn, sql_db) -> int:
