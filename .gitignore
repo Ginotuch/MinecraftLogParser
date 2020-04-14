@@ -114,3 +114,6 @@ venv.bak/
 
 # pgf files - matplotlib diagram files
 *.pgf
+
+# testfile
+custom_run.py
