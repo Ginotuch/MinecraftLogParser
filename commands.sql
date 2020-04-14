@@ -39,6 +39,7 @@ select *
 from chat_messages
 where current_username = 'xxxx';
 
+-- Count amount of people in some tables
 select count(distinct current_username)
 from chat_messages;
 select count(distinct username)
@@ -46,17 +47,35 @@ from usernames;
 select count(distinct uuid)
 from users;
 
-update chat_messages
-set users_uuid=(select users_uuid from usernames where username = current_username);
+-- Get chat messages count per person with their most recent username
+select current_username as username, count(*)
+from (select * from chat_messages order by message_id desc)
+where users_uuid is not NULL
+group by users_uuid
+order by count(*) desc;
 
-update chat_messages
-set users_uuid=(select U.users_uuid
-                from usernames as U
-                where U.username = current_username
-                group by U.users_uuid
-                having count(distinct U.users_uuid) == 1);
+-- Get chat message count and last log in date (very slow command)
+select C.current_username as username, count(*), log_in_date
+from (select * from chat_messages order by message_id desc) as C,
+     (select distinct users_uuid, log_in_date from user_ips order by log_in_id asc) as L
+where C.users_uuid is not NULL
+  and C.users_uuid = L.users_uuid
+group by C.users_uuid
+order by count(*) desc;
 
-select message_id
-from chat_messages
-order by message_id desc
-limit 1;
+
+-- Get total number of chat messages sent
+select count(*)
+from chat_messages;
+
+select count(distinct uuid)
+from users;
+
+-- Get all messages containing a word
+select current_username as username, count(*)
+from (select * from chat_messages order by message_id desc)
+where users_uuid is not NULL and message like '%y''all%'
+   or message like '%yall%'
+   or message like '%ya''ll%'
+group by users_uuid
+order by count(*) desc;
