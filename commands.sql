@@ -1,14 +1,31 @@
+-- List all messages containing a word
+select send_date, current_rank, current_username, message
+from chat_messages
+where message like '%xxxxx%'
+order by send_date desc;
+
+-- Get all chat messages from user
+select send_date, current_username, message
+from chat_messages
+where current_username = 'xxxx'
+order by send_date desc;
+
+-- Get all chat messages
+select send_date, current_rank, current_username, message
+from chat_messages
+order by send_date desc;
+
 -- Gets a list of messages sent within 200 seconds of a given time
-select *
+select send_date, current_rank, current_username, message
 from chat_messages
 where abs(strftime('%s', '2020-04-07 06:21:00') - strftime('%s', send_date)) < 200;
 
 -- Gets a list of messages sent between two times
-select *
+select send_date, current_rank, current_username, message
 from chat_messages
 where strftime('%s', '2020-03-28 05:33:14') <= strftime('%s', send_date)
   and strftime('%s', send_date) <= strftime('%s', '2020-03-28 06:22:04')
-order by send_date;
+order by send_date desc;
 
 -- List of UUIDs with usernames if they've changed their username
 select username, users_uuid, first_seen
@@ -34,11 +51,6 @@ where U.username in
   and U.users_uuid in (select users_uuid from usernames group by users_uuid having count(username) > 1)
 order by U.users_uuid;
 
--- Get all chat messages from user
-select *
-from chat_messages
-where current_username = 'xxxx';
-
 -- Count amount of people in some tables
 select count(distinct current_username)
 from chat_messages;
@@ -48,7 +60,7 @@ select count(distinct uuid)
 from users;
 
 -- Get chat messages count per person with their most recent username
-select current_username as username, count(*)
+select current_username as username, count(*) as 'message count'
 from (select * from chat_messages order by message_id desc)
 where users_uuid is not NULL
 group by users_uuid
@@ -68,14 +80,22 @@ order by count(*) desc;
 select count(*)
 from chat_messages;
 
-select count(distinct uuid)
-from users;
-
--- Get all messages containing a word
+-- Count all messages containing a word per user
 select current_username as username, count(*)
 from (select * from chat_messages order by message_id desc)
-where users_uuid is not NULL and message like '%y''all%'
-   or message like '%yall%'
-   or message like '%ya''ll%'
+where users_uuid is not NULL
+  and message like '%example%'
 group by users_uuid
 order by count(*) desc;
+
+-- Count all messages containing a word
+select count(*)
+from chat_messages
+where message like '%example%';
+
+-- Count total number of messages each user has sent with most recent username
+select current_username as username, sum(length(message)) as 'message count'
+from (select * from chat_messages order by message_id desc)
+where users_uuid is not NULL
+group by users_uuid
+order by sum(length(message)) desc;
