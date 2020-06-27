@@ -1,6 +1,7 @@
 import datetime
 import gzip
 import os
+import re
 import shutil
 import sqlite3
 from typing import List
@@ -14,6 +15,7 @@ class MinecraftLogParser:
         self.log_dir = log_dir
         self.sql_db = sql_db
         self.last_log_file = ""
+        self.encodingregex = re.compile("(\[0;\d*;\d*m|\[m|\[\d*m)")
 
     def main(self):
         self.make_sql()
@@ -72,7 +74,7 @@ class MinecraftLogParser:
                         print(".", end="")
                     c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
                     with open(os.path.join(root, file), encoding='utf8') as f:
-                        file_text = f.read()
+                        file_text = self.remove_encoding_errors(f.read())
                         for datatype in self.datatypes:
                             datatype.match_and_store(file_text, date)
         print("Done")
@@ -123,6 +125,9 @@ class MinecraftLogParser:
                     with open(os.path.join(self.log_dir, file[:-3]), 'wb') as f_out:
                         shutil.copyfileobj(f_in, f_out)
         print("DONE")
+
+    def remove_encoding_errors(self, text):
+        return self.encodingregex.sub("", text)
 
 
 if __name__ == '__main__':
