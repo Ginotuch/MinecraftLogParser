@@ -1,5 +1,6 @@
 import re
 import sqlite3
+from pathlib import Path
 from typing import Any, List, Dict, Tuple
 
 
@@ -30,7 +31,7 @@ class LogType:
     def sort(self) -> None:
         self.matches.sort(key=lambda x: x["id"])
 
-    def last_row(self, sql_db: str) -> str:
+    def last_row(self, sql_db: Path) -> str:
         if self.lrow == "":
             self._get_last_row(sql_db)
         return self.lrow

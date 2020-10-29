@@ -1,19 +1,18 @@
 import datetime
 import gzip
-import os
+from pathlib import Path
 import re
 import shutil
 import sqlite3
-from typing import List
 
 from minecraftlogparser.logtype import LogType, MessageType, IPType, UUIDType, UsernameType
 
 
 class MinecraftLogParser:
     def __init__(self, log_dir, sql_db):
-        self.datatypes: List[LogType] = [MessageType(), IPType(), UUIDType(), UsernameType()]
-        self.log_dir = log_dir
-        self.sql_db = sql_db
+        self.datatypes: list[LogType] = [MessageType(), IPType(), UUIDType(), UsernameType()]
+        self.log_dir: Path = log_dir
+        self.sql_db: Path = sql_db
         self.last_log_file = ""
         self.encodingregex = re.compile("(\[0;\d*;\d*m|\[m|\[\d*m)")
 
@@ -30,7 +29,7 @@ class MinecraftLogParser:
         conn = sqlite3.connect(self.sql_db)
         print(".", end="")
         conn.execute(
-            "update chat_messages set users_uuid=(select U.users_uuid from usernames as U where U.username like current_username and (select count(U.users_uuid) from usernames as U where U.username like current_username) = 1)")
+            "update chat_messages set users_uuid=(select U.users_uuid from usernames as U where U.username like current_username and (select count(U.users_uuid) from usernames as U where U.username like current_username) = 1) where users_uuid IS NULL;")
         print(".", end="")
         conn.commit()
         print(".", end="")
@@ -60,23 +59,21 @@ class MinecraftLogParser:
     def read_files(self):
         c = 0
         print("Parsing log files", end="")
-        for root, dirs, files in os.walk(self.log_dir):
-            for file in files:
-                if file[-4:].lower() == ".log":
-                    if file == "latest.log":
-                        date = datetime.datetime.fromtimestamp(
-                            os.path.getmtime(os.path.join(self.log_dir, 'latest.log'))).isoformat()[:10]
-                    else:
-                        date = file[:10]
-                    if date < self.last_log_file:
-                        continue
-                    if c == 0:
-                        print(".", end="")
-                    c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
-                    with open(os.path.join(root, file), encoding='utf8') as f:
-                        file_text = self.remove_encoding_errors(f.read())
-                        for datatype in self.datatypes:
-                            datatype.match_and_store(file_text, date)
+        for file in self.log_dir.glob("**/*.log"):
+            if file.name == "latest.log":
+                date = datetime.datetime.fromtimestamp(
+                    self.log_dir.joinpath('latest.log').stat().st_mtime).isoformat()[:10]
+            else:
+                date = file.name[:10]
+            if date < self.last_log_file:
+                continue
+            if c == 0:
+                print(".", end="")
+            c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
+            with open(file, encoding='utf8') as f:
+                file_text = self.remove_encoding_errors(f.read())
+                for datatype in self.datatypes:
+                    datatype.match_and_store(file_text, date)
         print("Done")
 
         print("Sorting data", end="")
@@ -93,11 +90,11 @@ class MinecraftLogParser:
         conn.close()
 
     def make_sql(self):
-        if not os.path.exists(self.sql_db):
+        if not self.sql_db.exists():
             print("No database found, making new one", end="")
             conn = sqlite3.connect(self.sql_db)
             print(".", end="")
-            with open(os.path.join(os.path.dirname(__file__), 'create_database.sql')) as sql_file:
+            with open(Path(__file__).parent.joinpath('create_database.sql')) as sql_file:
                 c = conn.cursor()
                 print(".", end="")
                 c.executescript(sql_file.read())
@@ -113,16 +110,15 @@ class MinecraftLogParser:
     def extract(self):
         print("Extracting logs", end="")
         c = 0
-        for file in os.listdir(self.log_dir):
+        for file in self.log_dir.iterdir():
             if c == 0:
                 print(".", end="")
             c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
-            if os.path.isfile(os.path.join(self.log_dir, file)) and file[-2:].lower() == "gz" and not os.path.exists(
-                    os.path.join(self.log_dir, file[:-3])):
+            if file.is_fifo() and file.name[-2:].lower() == "gz" and not self.log_dir.joinpath(file.name[:-3]).exists():
                 if file[:10] < self.last_log_file:
                     continue
-                with gzip.open(os.path.join(self.log_dir, file), 'rb') as f_in:
-                    with open(os.path.join(self.log_dir, file[:-3]), 'wb') as f_out:
+                with gzip.open(file, 'rb') as f_in:
+                    with open(self.log_dir.joinpath(file.name[:-3]), 'wb') as f_out:
                         shutil.copyfileobj(f_in, f_out)
         print("DONE")
 
