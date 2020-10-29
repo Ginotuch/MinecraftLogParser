@@ -14,7 +14,7 @@ and using a prefix through whatever permission manager you use (e.g. LuckPerms).
 * The file `latest.log` present in most logs folders will be assumed made on the most recent modify date of the file,
 otherwise rename it following ISO8601 format: `YYYY-MM-DD.log` (you can add digits at the end if there are multiple on the same day, eg adding "-4": `2020-01-01-4.log`)
 
-####Issues
+###Issues
 * Because this only works on log files and not while the server is running there are a few limitations.
 * Undefined behavior is caused when custom `/nick` names are applied to players in-game (no way to tell since nicknames
 and real usernames are logged exactly the same).
@@ -29,4 +29,4 @@ and real usernames are logged exactly the same).
 Sample commands for extracting and searching through data from the SQLite database.
 
 #### Requirements
-* Python 3.8+ (Tested with Python 3.8)
+* Python 3.9+ (Tested with Python 3.9)
