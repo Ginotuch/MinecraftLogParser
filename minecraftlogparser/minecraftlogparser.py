@@ -9,15 +9,15 @@ from minecraftlogparser.logtype import LogType, MessageType, IPType, UUIDType, U
 
 
 class MinecraftLogParser:
-    def __init__(self, log_dir, sql_db):
+    def __init__(self, log_dir, sql_db) -> None:
         self.datatypes: list[LogType] = [MessageType(), IPType(), UUIDType(), UsernameType(), CommandType()]
         self.log_dir: Path = log_dir
         self.sql_db: Path = sql_db
-        self.last_log_file = ""
-        self.encodingregex = re.compile("(\[0;\d*;\d*m|\[m|\[\d*m)")
-        self.chatcolor2regex = re.compile("(\[\d\d:\d\d:\d\d\]) \[[^]]*\]: (?:CURRENT|PLAYER)[^\n]*\n")
+        self.last_log_file: str = ""
+        self.encodingregex: re.Pattern = re.compile("(\[0;\d*;\d*m|\[m|\[\d*m)")
+        self.chatcolor2regex: re.Pattern = re.compile("(\[\d\d:\d\d:\d\d\]) \[[^]]*\]: (?:CURRENT|PLAYER)[^\n]*\n")
 
-    def main(self):
+    def main(self) -> None:
         self.make_sql()
         self.get_lrow()
         self.extract()
@@ -26,7 +26,7 @@ class MinecraftLogParser:
         self.update_commands_uuids()
         self.vacuum()
 
-    def update_messages_uuids(self):
+    def update_messages_uuids(self) -> None:
         print("Updating UUIDs for chat_messages table", end="")
         conn = sqlite3.connect(self.sql_db)
         print(".", end="")
@@ -38,7 +38,7 @@ class MinecraftLogParser:
         conn.close()
         print("DONE")
 
-    def update_commands_uuids(self):
+    def update_commands_uuids(self) -> None:
         print("Updating UUIDs for commands table", end="")
         conn = sqlite3.connect(self.sql_db)
         print(".", end="")
@@ -50,7 +50,7 @@ class MinecraftLogParser:
         conn.close()
         print("DONE")
 
-    def vacuum(self):
+    def vacuum(self) -> None:
         print("Performing VACUUM operation (cleaning DB)", end='')
         conn = sqlite3.connect(self.sql_db)
         print(".", end="")
@@ -61,8 +61,8 @@ class MinecraftLogParser:
         conn.close()
         print("DONE")
 
-    def get_lrow(self):
-        last_row = None
+    def get_lrow(self) -> None:
+        last_row: str = ""
         for datatype in self.datatypes:
             row = datatype.last_row(self.sql_db)
             if last_row is None or last_row > row[:8]:
@@ -70,15 +70,15 @@ class MinecraftLogParser:
         self.last_log_file = "{}-{}-{}".format(last_row[:4], last_row[4:6], last_row[6:8])
         print()
 
-    def read_files(self):
+    def read_files(self) -> None:
         c = 0
         print("Parsing log files", end="")
         for file in self.log_dir.glob("**/*.log"):
             if file.name == "latest.log":
-                date = datetime.datetime.fromtimestamp(
+                date: str = datetime.datetime.fromtimestamp(
                     self.log_dir.joinpath('latest.log').stat().st_mtime).isoformat()[:10]
             else:
-                date = file.name[:10]
+                date: str = file.name[:10]
             if date < self.last_log_file:
                 continue
             if c == 0:
@@ -97,14 +97,14 @@ class MinecraftLogParser:
             datatype.sort()
         print("DONE")
 
-        conn = sqlite3.connect(self.sql_db)
+        conn: sqlite3.Connection = sqlite3.connect(self.sql_db)
         for datatype in self.datatypes:
             print("Inserting rows from", datatype.name, end=" ")
             datatype.do_sql(conn, self.sql_db)
             print("DONE")
         conn.close()
 
-    def make_sql(self):
+    def make_sql(self) -> None:
         if not self.sql_db.exists():
             print("No database found, making new one", end="")
             conn = sqlite3.connect(self.sql_db)
@@ -122,7 +122,7 @@ class MinecraftLogParser:
             print(".", end="")
             print("DONE")
 
-    def extract(self):
+    def extract(self) -> None:
         print("Extracting logs", end="")
         c = 0
         for file in self.log_dir.iterdir():
@@ -137,10 +137,10 @@ class MinecraftLogParser:
                         shutil.copyfileobj(f_in, f_out)
         print("DONE")
 
-    def remove_encoding_errors(self, text):
+    def remove_encoding_errors(self, text: str) -> str:
         return self.encodingregex.sub("", text)
 
-    def remove_chatcolor2_outputs(self, text):
+    def remove_chatcolor2_outputs(self, text: str) -> str:
         return self.chatcolor2regex.sub("", text)
 
 
