@@ -15,6 +15,7 @@ class MinecraftLogParser:
         self.sql_db: Path = sql_db
         self.last_log_file = ""
         self.encodingregex = re.compile("(\[0;\d*;\d*m|\[m|\[\d*m)")
+        self.chatcolor2regex = re.compile("(\[\d\d:\d\d:\d\d\]) \[[^]]*\]: (?:CURRENT|PLAYER)[^\n]*\n")
 
     def main(self):
         self.make_sql()
@@ -71,7 +72,8 @@ class MinecraftLogParser:
                 print(".", end="")
             c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
             with open(file, encoding='utf8') as f:
-                file_text = self.remove_encoding_errors(f.read())
+                file_text = self.remove_chatcolor2_outputs(self.remove_encoding_errors(f.read()))
+
                 for datatype in self.datatypes:
                     datatype.match_and_store(file_text, date)
         print("Done")
@@ -114,8 +116,8 @@ class MinecraftLogParser:
             if c == 0:
                 print(".", end="")
             c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
-            if file.is_fifo() and file.name[-2:].lower() == "gz" and not self.log_dir.joinpath(file.name[:-3]).exists():
-                if file[:10] < self.last_log_file:
+            if file.is_file() and file.name[-2:].lower() == "gz" and not self.log_dir.joinpath(file.name[:-3]).exists():
+                if file.name[:10] < self.last_log_file:
                     continue
                 with gzip.open(file, 'rb') as f_in:
                     with open(self.log_dir.joinpath(file.name[:-3]), 'wb') as f_out:
@@ -124,6 +126,9 @@ class MinecraftLogParser:
 
     def remove_encoding_errors(self, text):
         return self.encodingregex.sub("", text)
+
+    def remove_chatcolor2_outputs(self, text):
+        return self.chatcolor2regex.sub("", text)
 
 
 if __name__ == '__main__':
