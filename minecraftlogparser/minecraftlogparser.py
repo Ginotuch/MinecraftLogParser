@@ -5,12 +5,12 @@ import re
 import shutil
 import sqlite3
 
-from minecraftlogparser.logtype import LogType, MessageType, IPType, UUIDType, UsernameType
+from minecraftlogparser.logtype import LogType, MessageType, IPType, UUIDType, UsernameType, CommandType
 
 
 class MinecraftLogParser:
     def __init__(self, log_dir, sql_db):
-        self.datatypes: list[LogType] = [MessageType(), IPType(), UUIDType(), UsernameType()]
+        self.datatypes: list[LogType] = [MessageType(), IPType(), UUIDType(), UsernameType(), CommandType()]
         self.log_dir: Path = log_dir
         self.sql_db: Path = sql_db
         self.last_log_file = ""
@@ -23,6 +23,7 @@ class MinecraftLogParser:
         self.extract()
         self.read_files()
         self.update_messages_uuids()
+        self.update_commands_uuids()
         self.vacuum()
 
     def update_messages_uuids(self):
@@ -31,6 +32,18 @@ class MinecraftLogParser:
         print(".", end="")
         conn.execute(
             "update chat_messages set users_uuid=(select U.users_uuid from usernames as U where U.username like current_username and (select count(U.users_uuid) from usernames as U where U.username like current_username) = 1) where users_uuid IS NULL;")
+        print(".", end="")
+        conn.commit()
+        print(".", end="")
+        conn.close()
+        print("DONE")
+
+    def update_commands_uuids(self):
+        print("Updating UUIDs for commands table", end="")
+        conn = sqlite3.connect(self.sql_db)
+        print(".", end="")
+        conn.execute(
+            "update commands set users_uuid=(select U.users_uuid from usernames as U where U.username like current_username and (select count(U.users_uuid) from usernames as U where U.username like current_username) = 1) where users_uuid IS NULL;")
         print(".", end="")
         conn.commit()
         print(".", end="")

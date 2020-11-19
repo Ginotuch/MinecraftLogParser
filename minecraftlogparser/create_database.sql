@@ -13,6 +13,19 @@ create index uname_index on chat_messages (current_username);
 create index date_index on chat_messages (send_date);
 create index message_index on chat_messages (message);
 
+create table commands
+(
+    command_id varchar(22),
+    send_date date,
+    current_username varchar(16),
+    users_uuid char(36) default NULL,
+    command text,
+    primary key (command_id),
+    foreign key (users_uuid) references users (uuid)
+);
+create index commands_uname_index on commands (current_username);
+create index commands_command_index on commands (command);
+
 create table users
 (
     uuid       char(36),

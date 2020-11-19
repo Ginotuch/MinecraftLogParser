@@ -76,6 +76,26 @@ class MessageType(LogType):
                 temp_dict["message_text"] = temp_dict["match"][3]
 
 
+class CommandType(MessageType):
+    def __init__(self):
+        super().__init__()
+        self.name = "CommandType"
+        self.lrow_command = "select command_id from commands order by command_id desc limit 1"
+        self.insert_command = "insert or ignore into commands (command_id, send_date, current_username, command) values (?, ?, ?, ?)"
+        self.sql_tuple = ("id", "date_text", "username", "command")
+        self.regex = re.compile(
+            "(\[\d\d:\d\d:\d\d\]) \[Server thread\/INFO]: ([^\n\v\0\r\t<>\\\/$%^@: ]{1,50}) issued server command: ([^\n\v\0\r]*)"
+        )
+
+    def match_and_store(self, file_text, date) -> None:
+        for line_num, line in enumerate(file_text.split("\n")):
+            line: str = line.strip()
+            if (match := self.regex.match(line)) is not None:
+                temp_dict: Dict[str, Any] = self._get_default_matches(match, date, line_num)
+                temp_dict["username"] = temp_dict["match"][1]
+                temp_dict["command"] = temp_dict["match"][2]
+
+
 class UserLoginType(LogType):
     def __init__(self):
         super().__init__()
