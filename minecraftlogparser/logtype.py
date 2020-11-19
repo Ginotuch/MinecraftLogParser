@@ -81,7 +81,7 @@ class UserLoginType(LogType):
         super().__init__()
         self.name = "DoubleLineType"
         self.regex = re.compile(
-            "(\[\d\d:\d\d:\d\d\]) \[User Authenticator #\d*\/INFO]: UUID of player ([^\n\v\0\r\t<>\\\/$%^@: ]{1,50}) is ([^\n\v\0\r ]*)\n(?:[^\n]*\n?){0,3}\[\d\d:\d\d:\d\d\] \[Server thread\/INFO\]: [^\n\v\0\r\t<>\\\/$%^@[: ]{1,50}\[\/([0-9\.]*)")
+            "(\[\d\d:\d\d:\d\d\]) \[User Authenticator #\d*\/INFO]: UUID of player ([^\n\v\0\r\t<>\\\/$%^@: ]{1,50}) is ([^\n\v\0\r ]*)\n\[\d\d:\d\d:\d\d\] \[Server thread\/INFO\]: [^\n\v\0\r\t<>\\\/$%^@[: ]{1,50}\[\/([0-9\.]*)")
 
     def match_and_store(self, file_text, date) -> None:
         line_doubles: List[str] = file_text.split("\n")
