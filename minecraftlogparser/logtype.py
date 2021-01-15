@@ -1,7 +1,7 @@
 import re
-import sqlite3
-from pathlib import Path
 from typing import Any, List, Dict, Tuple
+
+from minecraftlogparser.db import DB
 
 
 class LogType:
@@ -12,7 +12,7 @@ class LogType:
         self.lrow_command: str = ""
         self.sql_tuple: Tuple[str] = ("",)
         self.insert_command: str = ""
-        self.lrow: str = ""
+        self.lrow: str = "0"
 
     def match_and_store(self, file_text, date) -> None:
         pass
@@ -31,29 +31,24 @@ class LogType:
     def sort(self) -> None:
         self.matches.sort(key=lambda x: x["id"])
 
-    def last_row(self, sql_db: Path) -> str:
-        if self.lrow == "":
-            self._get_last_row(sql_db)
+    def last_row(self, db: DB) -> str:
+        if self.lrow == "0":
+            self._get_last_row(db)
         return self.lrow
 
-    def do_sql(self, conn, sql_db) -> int:
+    def do_sql(self, db: DB) -> int:
         c: int = 0
         for match in self.matches:
-            if match["id"] > self.last_row(sql_db):
+            if match["id"] > self.last_row(db):
                 c += 1
-                conn.execute(self.insert_command, [match[x] for x in self.sql_tuple])
-        conn.commit()
+                db.cursor.execute(self.insert_command, [match[x] for x in self.sql_tuple])
+        db.connection.commit()
         return c
 
-    def _get_last_row(self, sql_db) -> None:
-        conn: sqlite3.Connection = sqlite3.connect(sql_db)
-        cur: sqlite3.Cursor = conn.cursor()
-        cur.execute(self.lrow_command)
-        if (ret := cur.fetchall()) != []:
+    def _get_last_row(self, db: DB) -> None:
+        db.cursor.execute(self.lrow_command)
+        if (ret := db.cursor.fetchall()) != []:
             self.lrow = ret[0][0]
-        else:
-            self.lrow = "0"
-        cur.close()
 
 
 class MessageType(LogType):
