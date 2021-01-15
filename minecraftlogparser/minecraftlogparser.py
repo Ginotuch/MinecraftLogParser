@@ -9,7 +9,7 @@ from minecraftlogparser.logtype import LogType, MessageType, IPType, UUIDType, U
 
 
 class MinecraftLogParser:
-    def __init__(self, log_dir, sql_db) -> None:
+    def __init__(self, log_dir: Path, sql_db: Path) -> None:
         self.datatypes: list[LogType] = [MessageType(), IPType(), UUIDType(), UsernameType(), CommandType()]
         self.log_dir: Path = log_dir
         self.sql_db: Path = sql_db
@@ -31,7 +31,7 @@ class MinecraftLogParser:
         conn = sqlite3.connect(self.sql_db)
         print(".", end="")
         conn.execute(
-            "update chat_messages set users_uuid=(select U.users_uuid from usernames as U where U.username like current_username and (select count(U.users_uuid) from usernames as U where U.username like current_username) = 1) where users_uuid IS NULL;")
+            "update chat_messages set users_uuid=(select U.users_uuid from usernames as U where U.username = current_username and (select count(U.users_uuid) from usernames as U where U.username = current_username) = 1) where users_uuid IS NULL;")
         print(".", end="")
         conn.commit()
         print(".", end="")
@@ -43,7 +43,7 @@ class MinecraftLogParser:
         conn = sqlite3.connect(self.sql_db)
         print(".", end="")
         conn.execute(
-            "update commands set users_uuid=(select U.users_uuid from usernames as U where U.username like current_username and (select count(U.users_uuid) from usernames as U where U.username like current_username) = 1) where users_uuid IS NULL;")
+            "update commands set users_uuid=(select U.users_uuid from usernames as U where U.username = current_username and (select count(U.users_uuid) from usernames as U where U.username = current_username) = 1) where users_uuid IS NULL;")
         print(".", end="")
         conn.commit()
         print(".", end="")
@@ -83,7 +83,7 @@ class MinecraftLogParser:
                 continue
             if c == 0:
                 print(".", end="")
-            c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
+            c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)  # make progress bar since first log file todo: make non built-in date
             with open(file, encoding='utf8') as f:
                 file_text = self.remove_chatcolor2_outputs(self.remove_encoding_errors(f.read()))
 

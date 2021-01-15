@@ -7,7 +7,7 @@ order by send_date desc;
 -- Get all chat messages from user
 select send_date, current_username, message
 from chat_messages
-where current_username = 'xxxx'
+where current_username = 'example'
 order by send_date desc;
 
 -- Get all chat messages
@@ -18,7 +18,7 @@ order by send_date desc;
 -- Gets a list of messages sent within 200 seconds of a given time
 select send_date, current_rank, current_username, message
 from chat_messages
-where abs(strftime('%s', '2020-04-07 06:21:00') - strftime('%s', send_date)) < 200;
+where abs(strftime('%s', '2020-09-13 10:05:51') - strftime('%s', send_date)) < 200;
 
 -- Gets a list of messages sent between two times
 select send_date, current_rank, current_username, message
@@ -26,6 +26,8 @@ from chat_messages
 where strftime('%s', '2020-03-28 05:33:14') <= strftime('%s', send_date)
   and strftime('%s', send_date) <= strftime('%s', '2020-03-28 06:22:04')
 order by send_date desc;
+
+select * from chat_messages where users_uuid = (select s.users_uuid from usernames s where s.username like 'example');
 
 -- List of UUIDs with usernames if they've changed their username
 select username, users_uuid, first_seen
@@ -99,3 +101,20 @@ from (select * from chat_messages order by message_id desc)
 where users_uuid is not NULL
 group by users_uuid
 order by sum(length(message)) desc;
+
+
+select * from usernames where username like 'example';
+
+select user_ips.* from user_ips, usernames where username = 'example' and user_ips.users_uuid = usernames.users_uuid;
+
+select * from usernames where username = 'example';
+
+select * from commands where current_username = 'example';
+
+select * from commands where command like '%nick%';
+
+select * from usernames order by first_seen asc;
+
+select * from user_ips inner join users u on u.uuid = user_ips.users_uuid
+
+select * from user_ips u1, user_ips u2 where u1.users_uuid = u2.users_uuid and u1.log_in_date > date('2020-11-15') order by u2.log_in_date;

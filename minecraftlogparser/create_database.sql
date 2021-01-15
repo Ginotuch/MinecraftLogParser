@@ -12,6 +12,7 @@ create table chat_messages
 create index uname_index on chat_messages (current_username);
 create index date_index on chat_messages (send_date);
 create index message_index on chat_messages (message);
+create index users_uuid_index on chat_messages (users_uuid);
 
 create table commands
 (
