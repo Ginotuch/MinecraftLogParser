@@ -117,3 +117,6 @@ venv.bak/
 
 # testfile
 custom_run.py
+
+# logs directory
+logs/
