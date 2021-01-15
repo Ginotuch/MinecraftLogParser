@@ -72,7 +72,8 @@ class MinecraftLogParser:
     def read_files(self) -> None:
         c = 0
         print("Parsing log files", end="")
-        for file in self.log_dir.glob("**/*.log"):
+        log_count = len(list(self.log_dir.glob("*.log")))
+        for file in self.log_dir.glob("*.log"):
             if file.name == "latest.log":
                 date: str = datetime.datetime.fromtimestamp(
                     self.log_dir.joinpath('latest.log').stat().st_mtime).isoformat()[:10]
@@ -82,7 +83,7 @@ class MinecraftLogParser:
                 continue
             if c == 0:
                 print(".", end="")
-            c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)  # make progress bar since first log file todo: make non built-in date
+            c = (c + 1) % (log_count // 10)
             with open(file, encoding='utf8') as f:
                 file_text = self.remove_chatcolor2_outputs(self.remove_encoding_errors(f.read()))
 
@@ -123,11 +124,12 @@ class MinecraftLogParser:
 
     def extract(self) -> None:
         print("Extracting logs", end="")
+        log_count = len(list(self.log_dir.glob("*.gz")))
         c = 0
         for file in self.log_dir.iterdir():
             if c == 0:
                 print(".", end="")
-            c = (c + 1) % ((datetime.datetime.now() - datetime.datetime.fromisoformat("2019-12-05")).days // 10)
+            c = (c + 1) % (log_count // 10)
             if file.is_file() and file.name[-2:].lower() == "gz" and not self.log_dir.joinpath(file.name[:-3]).exists():
                 if file.name[:10] < self.last_log_file:
                     continue
