@@ -63,7 +63,6 @@ class MinecraftLogParser:
             datatype.sort()
         print("DONE")
 
-
         for datatype in self.logtypes:
             print("Inserting rows from", datatype.name, end=" ")
             datatype.do_sql(self.db)

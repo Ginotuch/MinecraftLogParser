@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Dict, Tuple
+from typing import Any
 
 from .db import DB
 
@@ -7,10 +7,10 @@ from .db import DB
 class LogType:
     def __init__(self):
         self.name: str = "LogType"
-        self.matches: List[Dict[str, Any]] = []
+        self.matches: list[dict[str, Any]] = []
         self.regex: re.Pattern = re.compile("")
         self.lrow_command: str = ""
-        self.sql_tuple: Tuple[str] = ("",)
+        self.sql_tuple: tuple[str] = ("",)
         self.insert_command: str = ""
         self.lrow: str = "0"
 
@@ -21,7 +21,7 @@ class LogType:
         match: tuple = match.groups()
         date_text: str = "{} {}".format(date, match[0][1:-1])
         message_id: str = "{}{:08d}".format(date_text.replace(" ", "").replace(":", "").replace("-", ""), line_num)
-        temp_dict: Dict[str, Any] = {
+        temp_dict: dict[str, Any] = {
             "match": match,
             "date_text": date_text,
             "id": message_id}
@@ -65,7 +65,7 @@ class MessageType(LogType):
         for line_num, line in enumerate(file_text.split("\n")):
             line: str = line.strip()
             if (match := self.regex.match(line)) is not None:
-                temp_dict: Dict[str, Any] = self._get_default_matches(match, date, line_num)
+                temp_dict: dict[str, Any] = self._get_default_matches(match, date, line_num)
                 temp_dict["rank"] = temp_dict["match"][1][1:-1]
                 temp_dict["username"] = temp_dict["match"][2]
                 temp_dict["message_text"] = temp_dict["match"][3]
@@ -86,7 +86,7 @@ class CommandType(MessageType):
         for line_num, line in enumerate(file_text.split("\n")):
             line: str = line.strip()
             if (match := self.regex.match(line)) is not None:
-                temp_dict: Dict[str, Any] = self._get_default_matches(match, date, line_num)
+                temp_dict: dict[str, Any] = self._get_default_matches(match, date, line_num)
                 temp_dict["username"] = temp_dict["match"][1]
                 temp_dict["command"] = temp_dict["match"][2]
 
@@ -99,11 +99,11 @@ class UserLoginType(LogType):
             "(\[\d\d:\d\d:\d\d\]) \[User Authenticator #\d*\/INFO]: UUID of player ([^\n\v\0\r\t<>\\\/$%^@: ]{1,50}) is ([^\n\v\0\r ]*)\n\[\d\d:\d\d:\d\d\] \[Server thread\/INFO\]: [^\n\v\0\r\t<>\\\/$%^@[: ]{1,50}\[\/([0-9\.]*)")
 
     def match_and_store(self, file_text, date) -> None:
-        line_doubles: List[str] = file_text.split("\n")
+        line_doubles: list[str] = file_text.split("\n")
         line_doubles = [line_doubles[i] + "\n" + line_doubles[i + 1] for i in range(len(line_doubles) - 1)]
         for line_num, line in enumerate(line_doubles):
             if (match := self.regex.match(line)) is not None:
-                temp_dict: Dict[str, Any] = self._get_default_matches(match, date, line_num)
+                temp_dict: dict[str, Any] = self._get_default_matches(match, date, line_num)
                 temp_dict["username"] = temp_dict["match"][1]
                 temp_dict["users_uuid"] = temp_dict["match"][2]
                 temp_dict["ip"] = temp_dict["match"][3]
