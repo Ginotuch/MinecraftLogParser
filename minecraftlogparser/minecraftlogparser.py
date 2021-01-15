@@ -65,10 +65,9 @@ class MinecraftLogParser:
         last_row: str = ""
         for datatype in self.datatypes:
             row = datatype.last_row(self.sql_db)
-            if last_row is None or last_row > row[:8]:
+            if last_row == "" or last_row > row[:8]:
                 last_row = row[:8]
         self.last_log_file = "{}-{}-{}".format(last_row[:4], last_row[4:6], last_row[6:8])
-        print()
 
     def read_files(self) -> None:
         c = 0
