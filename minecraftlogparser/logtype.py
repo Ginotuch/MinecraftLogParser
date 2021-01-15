@@ -1,7 +1,7 @@
 import re
 from typing import Any, List, Dict, Tuple
 
-from minecraftlogparser.db import DB
+from .db import DB
 
 
 class LogType:
