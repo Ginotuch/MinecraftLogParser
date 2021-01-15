@@ -143,7 +143,3 @@ class MinecraftLogParser:
 
     def remove_chatcolor2_outputs(self, text: str) -> str:
         return self.chatcolor2regex.sub("", text)
-
-
-if __name__ == '__main__':
-    MinecraftLogParser("C:\\path\\to\\logs", "C:\\path\\to\\chat.db").main()
